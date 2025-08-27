@@ -61,7 +61,7 @@ export default function CreatePollPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 max-w-4xl">
+    <div className="container mx-auto py-8 px-4 sm:px-6 max-w-4xl">
       <Button variant="outline" className="mb-6" onClick={() => router.back()}>
         ← Back
       </Button>

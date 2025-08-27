@@ -1,15 +1,19 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
+import { Session, User } from '@supabase/supabase-js';
 
-type User = {
+type AuthUser = {
   id: string;
-  name: string;
-  email: string;
+  name?: string;
+  email?: string;
 } | null;
 
 type AuthContextType = {
-  user: User;
+  user: AuthUser;
+  session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (name: string, email: string, password: string) => Promise<void>;
@@ -19,40 +23,79 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User>(null);
+  const [user, setUser] = useState<AuthUser>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    // TODO: Check if user is already authenticated
-    // For now, we'll just simulate loading
-    const checkAuth = async () => {
+    // Check for active session on mount
+    const getSession = async () => {
+      setLoading(true);
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        // For now, we'll just set loading to false
-        setLoading(false);
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+          throw error;
+        }
+        setSession(data.session);
+        if (data.session) {
+          const { data: userData } = await supabase.auth.getUser();
+          if (userData.user) {
+            setUser({
+              id: userData.user.id,
+              email: userData.user.email,
+              name: userData.user.user_metadata?.name || userData.user.email?.split('@')[0],
+            });
+          }
+        }
       } catch (error) {
-        console.error('Authentication check failed:', error);
+        console.error('Error getting session:', error);
+      } finally {
         setLoading(false);
       }
     };
 
-    checkAuth();
-  }, []);
+    getSession();
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, currentSession) => {
+        setSession(currentSession);
+        if (currentSession) {
+          const { data: userData } = await supabase.auth.getUser();
+          if (userData.user) {
+            setUser({
+              id: userData.user.id,
+              email: userData.user.email,
+              name: userData.user.user_metadata?.name || userData.user.email?.split('@')[0],
+            });
+          }
+        } else {
+          setUser(null);
+        }
+        router.refresh();
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [router]);
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     try {
-      // TODO: Implement actual authentication
-      // Simulate successful login
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setUser({
-        id: '1',
-        name: 'Demo User',
-        email: email,
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-    } catch (error) {
-      console.error('Sign in failed:', error);
+
+      if (error) {
+        throw error;
+      }
+      router.push('/polls');
+    } catch (error: any) {
+      console.error('Sign in failed:', error.message);
       throw error;
     } finally {
       setLoading(false);
@@ -62,16 +105,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (name: string, email: string, password: string) => {
     setLoading(true);
     try {
-      // TODO: Implement actual registration
-      // Simulate successful registration
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setUser({
-        id: '1',
-        name: name,
-        email: email,
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
+          },
+        },
       });
-    } catch (error) {
-      console.error('Sign up failed:', error);
+
+      if (error) {
+        throw error;
+      }
+      router.push('/auth/sign-in');
+    } catch (error: any) {
+      console.error('Sign up failed:', error.message);
       throw error;
     } finally {
       setLoading(false);
@@ -81,12 +130,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     setLoading(true);
     try {
-      // TODO: Implement actual sign out
-      // Simulate successful sign out
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setUser(null);
-    } catch (error) {
-      console.error('Sign out failed:', error);
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        throw error;
+      }
+      router.push('/');
+    } catch (error: any) {
+      console.error('Sign out failed:', error.message);
       throw error;
     } finally {
       setLoading(false);
@@ -94,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,100 +1,93 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Avatar } from '@/components/ui/avatar';
-// TODO: Import the actual auth context when implemented
-// import { useAuth } from '@/app/auth/context/auth-context';
-
-type UserProfile = {
-  id: string;
-  name: string;
-  email: string;
-  createdPolls: number;
-  votedPolls: number;
-};
+import { useAuth } from '../context/auth-context';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Profile() {
-  // TODO: Use the actual auth context
-  // const { user, signOut } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate fetching profile data
-    const fetchProfile = async () => {
-      try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Mock profile data
-        setProfile({
-          id: '1',
-          name: 'Demo User',
-          email: 'demo@example.com',
-          createdPolls: 5,
-          votedPolls: 12,
-        });
-      } catch (error) {
-        console.error('Failed to fetch profile:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, []);
+  const { user, signOut, loading } = useAuth();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const router = useRouter();
 
   const handleSignOut = async () => {
+    setIsSigningOut(true);
     try {
-      // TODO: Implement actual sign out
-      console.log('Signing out...');
-      // await signOut();
+      await signOut();
     } catch (error) {
-      console.error('Sign out failed:', error);
+      console.error('Error signing out:', error);
+    } finally {
+      setIsSigningOut(false);
     }
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading profile...</div>;
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 mx-4 sm:mx-auto bg-white rounded-lg shadow-md">
+        <p className="text-center">Loading profile...</p>
+      </div>
+    );
   }
 
-  if (!profile) {
-    return <div className="flex justify-center items-center min-h-screen">User not found</div>;
+  if (!user) {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 mx-4 sm:mx-auto bg-white rounded-lg shadow-md">
+        <h1 className="text-2xl font-bold mb-6 text-center">Profile</h1>
+        <p className="text-center mb-6">You need to sign in to view your profile.</p>
+        <div className="flex flex-col space-y-4">
+          <button
+            onClick={() => router.push('/auth/sign-in')}
+            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md"
+          >
+            Sign In
+          </button>
+          <button
+            onClick={() => router.push('/auth/sign-up')}
+            className="w-full py-2 px-4 bg-white hover:bg-gray-100 text-blue-600 font-medium rounded-md border border-blue-600"
+          >
+            Sign Up
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto py-8 max-w-4xl">
-      <Card>
-        <CardHeader className="flex flex-row items-center gap-4">
-          <Avatar className="h-16 w-16">
-            <div className="flex h-full w-full items-center justify-center bg-primary text-xl text-primary-foreground">
-              {profile.name.charAt(0)}
-            </div>
-          </Avatar>
-          <div>
-            <CardTitle>{profile.name}</CardTitle>
-            <CardDescription>{profile.email}</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div className="p-4 border rounded-lg">
-              <h3 className="text-lg font-medium">Created Polls</h3>
-              <p className="text-3xl font-bold">{profile.createdPolls}</p>
-            </div>
-            <div className="p-4 border rounded-lg">
-              <h3 className="text-lg font-medium">Voted Polls</h3>
-              <p className="text-3xl font-bold">{profile.votedPolls}</p>
-            </div>
-          </div>
-          
-          <div className="flex justify-end">
-            <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="max-w-md mx-auto mt-10 p-6 mx-4 sm:mx-auto bg-white rounded-lg shadow-md">
+      <h1 className="text-2xl font-bold mb-6 text-center">Your Profile</h1>
+      
+      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+        <div className="mb-4">
+          <p className="text-sm text-gray-500">Name</p>
+          <p className="font-medium">{user.name || 'Not provided'}</p>
+        </div>
+        
+        <div className="mb-4">
+          <p className="text-sm text-gray-500">Email</p>
+          <p className="font-medium">{user.email}</p>
+        </div>
+        
+        <div className="mb-4">
+          <p className="text-sm text-gray-500">User ID</p>
+          <p className="font-medium text-xs truncate">{user.id}</p>
+        </div>
+      </div>
+      
+      <div className="flex justify-between">
+        <button
+          onClick={() => router.push('/polls/my-polls')}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          My Polls
+        </button>
+        
+        <button
+          onClick={handleSignOut}
+          disabled={isSigningOut}
+          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSigningOut ? 'Signing out...' : 'Sign Out'}
+        </button>
+      </div>
     </div>
   );
 }

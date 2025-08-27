@@ -67,7 +67,7 @@ export default function PollsPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 max-w-4xl">
+    <div className="container mx-auto py-8 px-4 sm:px-6 max-w-4xl">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">All Polls</h1>
         <Link href="/polls/create">
