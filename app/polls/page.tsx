@@ -1,70 +1,57 @@
-'use client';
-
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 
 type Poll = {
   id: string;
   title: string;
   description: string;
-  createdBy: string;
-  createdAt: string;
-  votesCount: number;
+  created_by: string;
+  created_at: string;
+  total_votes: number;
 };
 
-export default function PollsPage() {
-  const [polls, setPolls] = useState<Poll[]>([]);
-  const [loading, setLoading] = useState(true);
+async function getPolls(): Promise<Poll[]> {
+  try {
+    const supabase = createServerSupabaseClient();
+    const { data: polls, error } = await supabase
+      .from('polls')
+      .select(`
+        id,
+        title,
+        description,
+        created_by,
+        created_at,
+        poll_options (votes)
+      `)
+      .order('created_at', { ascending: false });
 
-  useEffect(() => {
-    // Simulate fetching polls
-    const fetchPolls = async () => {
-      try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Mock polls data
-        setPolls([
-          {
-            id: '1',
-            title: 'Favorite Programming Language',
-            description: 'What is your favorite programming language?',
-            createdBy: 'John Doe',
-            createdAt: '2023-05-15',
-            votesCount: 42,
-          },
-          {
-            id: '2',
-            title: 'Best Frontend Framework',
-            description: 'Which frontend framework do you prefer?',
-            createdBy: 'Jane Smith',
-            createdAt: '2023-05-10',
-            votesCount: 38,
-          },
-          {
-            id: '3',
-            title: 'Remote Work Preference',
-            description: 'Do you prefer working remotely or in an office?',
-            createdBy: 'Alex Johnson',
-            createdAt: '2023-05-05',
-            votesCount: 56,
-          },
-        ]);
-      } catch (error) {
-        console.error('Failed to fetch polls:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (error) {
+      console.error('Error fetching polls:', error);
+      return [];
+    }
 
-    fetchPolls();
-  }, []);
-
-  if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading polls...</div>;
+    // Transform the data to match our Poll type
+    return polls?.map(poll => ({
+      id: poll.id,
+      title: poll.title,
+      description: poll.description || '',
+      created_by: poll.created_by,
+      created_at: new Date(poll.created_at).toLocaleDateString(),
+      total_votes: poll.poll_options?.reduce((sum: number, option: any) => sum + (option.votes || 0), 0) || 0,
+    })) || [];
+  } catch (error) {
+    console.error('Error fetching polls:', error);
+    return [];
   }
+}
+
+export default async function PollsPage() {
+  const polls = await getPolls();
 
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 max-w-4xl">
@@ -81,13 +68,13 @@ export default function PollsPage() {
             <Card className="h-full hover:shadow-md transition-shadow">
               <CardHeader>
                 <CardTitle>{poll.title}</CardTitle>
-                <CardDescription>Created by {poll.createdBy} on {poll.createdAt}</CardDescription>
+                <CardDescription>Created by {poll.created_by} on {poll.created_at}</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="line-clamp-2">{poll.description}</p>
               </CardContent>
               <CardFooter>
-                <p className="text-sm text-muted-foreground">{poll.votesCount} votes</p>
+                <p className="text-sm text-muted-foreground">{poll.total_votes} votes</p>
               </CardFooter>
             </Card>
           </Link>
