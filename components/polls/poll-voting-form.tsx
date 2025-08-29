@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { submitVote } from '@/lib/actions';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -18,12 +19,24 @@ type PollVotingFormProps = {
 };
 
 export default function PollVotingForm({ pollId, options, totalVotes }: PollVotingFormProps) {
+  const router = useRouter();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [localOptions, setLocalOptions] = useState(options);
   const [localTotalVotes, setLocalTotalVotes] = useState(totalVotes);
+
+  // Redirect to polls dashboard after voting
+  useEffect(() => {
+    if (hasVoted) {
+      const timer = setTimeout(() => {
+        router.push('/polls');
+      }, 2000); // Wait 2 seconds to show the success message
+
+      return () => clearTimeout(timer);
+    }
+  }, [hasVoted, router]);
 
   const handleVote = async () => {
     if (!selectedOption) return;
@@ -106,8 +119,10 @@ export default function PollVotingForm({ pollId, options, totalVotes }: PollVoti
           {isSubmitting ? 'Submitting...' : 'Submit Vote'}
         </Button>
       ) : (
-        <div className="w-full text-center text-muted-foreground">
+        <div className="w-full text-center text-green-500 font-medium">
           Thank you for voting! Total votes: {localTotalVotes}
+          <br />
+          <span className="text-sm text-green-400">Redirecting to polls dashboard...</span>
         </div>
       )}
     </div>

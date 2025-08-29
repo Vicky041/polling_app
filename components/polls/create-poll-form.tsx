@@ -23,6 +23,7 @@ export default function CreatePollForm() {
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleAddOption = () => {
     setOptions([...options, { id: `${Date.now()}`, text: '' }]);
@@ -44,6 +45,7 @@ export default function CreatePollForm() {
 
   const handleSubmit = async (formData: FormData) => {
     setError(null);
+    setSuccess(null);
     
     // Client-side validation
     if (!title.trim()) {
@@ -65,6 +67,15 @@ export default function CreatePollForm() {
       
       // Call the Server Action
       await createPoll(formData);
+      
+      // Show success message
+      setSuccess('Poll created successfully! Redirecting...');
+      
+      // Redirect to polls page after a short delay
+      setTimeout(() => {
+        router.push('/polls');
+      }, 1500);
+      
     } catch (error) {
       console.error('Failed to create poll:', error);
       setError('Failed to create poll. Please try again.');
@@ -83,6 +94,12 @@ export default function CreatePollForm() {
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
+          {success && (
+            <Alert variant="success">
+              <AlertDescription>{success}</AlertDescription>
             </Alert>
           )}
           
@@ -144,8 +161,8 @@ export default function CreatePollForm() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating Poll...' : 'Create Poll'}
+          <Button type="submit" className="w-full" disabled={isSubmitting || !!success}>
+            {isSubmitting ? 'Creating Poll...' : success ? 'Poll Created!' : 'Create Poll'}
           </Button>
         </CardFooter>
       </form>
