@@ -15,9 +15,11 @@ export function AppNavbar() {
             ALX Polly
           </Link>
           <nav className="hidden md:flex space-x-4">
-            <Link href="/polls" className="text-gray-600 hover:text-blue-600">
-              Polls
-            </Link>
+            {user && (
+              <Link href="/polls" className="text-gray-600 hover:text-blue-600">
+                Polls
+              </Link>
+            )}
             <Link href="/landing" className="text-gray-600 hover:text-blue-600">
               About
             </Link>
@@ -61,12 +63,6 @@ export function AppNavbar() {
             </>
           ) : (
             <>
-              <Link 
-                href="/polls/create" 
-                className="hidden md:block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-4"
-              >
-                Create Poll
-              </Link>
               <Link 
                 href="/auth/sign-in" 
                 className="text-gray-600 hover:text-blue-600"

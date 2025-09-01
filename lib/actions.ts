@@ -14,6 +14,12 @@ export async function createPoll(formData: FormData) {
   try {
     const supabase = createServerSupabaseClient();
     
+    // Get the authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      throw new Error('You must be logged in to create a poll');
+    }
+    
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
     const options = formData.get('options') as string;
@@ -34,7 +40,7 @@ export async function createPoll(formData: FormData) {
       .insert({
         title: title.trim(),
         description: description?.trim() || null,
-        created_by: 'anonymous', // TODO: Replace with actual user ID when auth is implemented
+        created_by: user.id,
       })
       .select()
       .single();
@@ -94,7 +100,7 @@ export async function submitVote(pollId: string, optionId: string) {
     }
 
     revalidatePath(`/polls/${pollId}`);
-    return { success: true };
+    redirect(`/polls/${pollId}`);
   } catch (error) {
     console.error('Error submitting vote:', error);
     throw error;

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { submitVote } from '@/lib/actions';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle } from 'lucide-react';
 
 type PollOption = {
   id: string;
@@ -98,9 +99,13 @@ export default function PollVotingForm({ pollId, options, totalVotes }: PollVoti
             </div>
             <span className="text-sm">{calculatePercentage(option.votes)}%</span>
           </div>
-          <div className="w-full bg-muted rounded-full h-2.5">
+          <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden">
             <div
-              className="bg-primary h-2.5 rounded-full"
+              className={`h-2.5 rounded-full transition-all duration-500 ease-out ${
+                hasVoted && selectedOption === option.id 
+                  ? 'bg-green-500' 
+                  : 'bg-primary'
+              }`}
               style={{ width: `${calculatePercentage(option.votes)}%` }}
             ></div>
           </div>
@@ -119,11 +124,18 @@ export default function PollVotingForm({ pollId, options, totalVotes }: PollVoti
           {isSubmitting ? 'Submitting...' : 'Submit Vote'}
         </Button>
       ) : (
-        <div className="w-full text-center text-green-500 font-medium">
-          Thank you for voting! Total votes: {localTotalVotes}
-          <br />
-          <span className="text-sm text-green-400">Redirecting to polls dashboard...</span>
-        </div>
+        <Alert className="border-green-200 bg-green-50">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">
+            <div className="font-semibold mb-1">Vote submitted successfully!</div>
+            <div className="text-sm">
+              Thank you for participating. Total votes: <span className="font-medium">{localTotalVotes}</span>
+            </div>
+            <div className="text-xs text-green-600 mt-2">
+              Redirecting to polls dashboard in 2 seconds...
+            </div>
+          </AlertDescription>
+        </Alert>
       )}
     </div>
   );

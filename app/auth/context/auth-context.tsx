@@ -1,7 +1,50 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+// Create Supabase client with proper cookie handling
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  {
+    auth: {
+      storage: {
+        getItem: (key: string) => {
+          if (typeof window === 'undefined') return null;
+          return window.localStorage.getItem(key);
+        },
+        setItem: (key: string, value: string) => {
+          if (typeof window === 'undefined') return;
+          window.localStorage.setItem(key, value);
+          
+          // Also set cookies for middleware
+          if (key.includes('supabase.auth.token')) {
+            try {
+              const session = JSON.parse(value);
+              if (session.access_token && session.refresh_token) {
+                document.cookie = `sb-access-token=${session.access_token}; path=/; max-age=3600; SameSite=Lax`;
+                document.cookie = `sb-refresh-token=${session.refresh_token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+              }
+            } catch (e) {
+              console.log('Failed to parse session for cookies');
+            }
+          }
+        },
+        removeItem: (key: string) => {
+          if (typeof window === 'undefined') return;
+          window.localStorage.removeItem(key);
+          
+          // Also remove cookies
+          if (key.includes('supabase.auth.token')) {
+            document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+          }
+        },
+      },
+    },
+  }
+);
 import { useRouter } from 'next/navigation';
 import { Session, User } from '@supabase/supabase-js';
 
@@ -85,7 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -93,6 +136,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         throw error;
       }
+      
+      // Manually set cookies for immediate middleware recognition
+      if (data.session) {
+        document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=3600; SameSite=Lax`;
+        document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+      }
+      
       router.push('/polls');
     } catch (error: any) {
       console.error('Sign in failed:', error.message);
@@ -134,6 +184,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         throw error;
       }
+      
+      // Clear cookies
+      document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      
       router.push('/');
     } catch (error: any) {
       console.error('Sign out failed:', error.message);

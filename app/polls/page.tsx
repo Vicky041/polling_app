@@ -15,9 +15,13 @@ type Poll = {
   total_votes: number;
 };
 
-async function getPolls(): Promise<Poll[]> {
+async function getPolls(): Promise<{ polls: Poll[], currentUserId: string | null }> {
   try {
     const supabase = createServerSupabaseClient();
+    
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
     const { data: polls, error } = await supabase
       .from('polls')
       .select(`
@@ -32,11 +36,11 @@ async function getPolls(): Promise<Poll[]> {
 
     if (error) {
       console.error('Error fetching polls:', error);
-      return [];
+      return { polls: [], currentUserId: user?.id || null };
     }
 
     // Transform the data to match our Poll type
-    return polls?.map(poll => ({
+    const transformedPolls = polls?.map(poll => ({
       id: poll.id,
       title: poll.title,
       description: poll.description || '',
@@ -44,14 +48,16 @@ async function getPolls(): Promise<Poll[]> {
       created_at: new Date(poll.created_at).toLocaleDateString(),
       total_votes: poll.poll_options?.reduce((sum: number, option: any) => sum + (option.votes || 0), 0) || 0,
     })) || [];
+    
+    return { polls: transformedPolls, currentUserId: user?.id || null };
   } catch (error) {
     console.error('Error fetching polls:', error);
-    return [];
+    return { polls: [], currentUserId: null };
   }
 }
 
 export default async function PollsPage() {
-  const polls = await getPolls();
+  const { polls, currentUserId } = await getPolls();
 
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 max-w-4xl">
@@ -84,7 +90,7 @@ export default async function PollsPage() {
                     View & Vote
                   </Button>
                 </Link>
-                {poll.created_by === 'anonymous' && (
+                {poll.created_by === currentUserId && (
                   <>
                     <Link href={`/polls/${poll.id}/edit`}>
                       <Button variant="outline" size="sm">
