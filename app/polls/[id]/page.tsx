@@ -77,8 +77,9 @@ async function handleVote(formData: FormData) {
   await submitVote(pollId, optionId);
 }
 
-export default async function PollDetailPage({ params }: { params: { id: string } }) {
-  const poll = await getPollDetails(params.id);
+export default async function PollDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const poll = await getPollDetails(id);
   
   if (!poll) {
     notFound();

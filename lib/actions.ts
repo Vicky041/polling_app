@@ -100,7 +100,6 @@ export async function submitVote(pollId: string, optionId: string) {
     }
 
     revalidatePath(`/polls/${pollId}`);
-    redirect(`/polls/${pollId}`);
   } catch (error) {
     console.error('Error submitting vote:', error);
     throw error;

@@ -30,23 +30,35 @@ export default function PollVotingForm({ pollId, options, totalVotes }: PollVoti
 
   // Redirect to polls dashboard after voting
   useEffect(() => {
+    console.log('useEffect triggered, hasVoted:', hasVoted);
     if (hasVoted) {
+      console.log('hasVoted is true, setting redirect timer');
       const timer = setTimeout(() => {
+        console.log('Timer expired, redirecting to /polls');
         router.push('/polls');
       }, 2000); // Wait 2 seconds to show the success message
 
-      return () => clearTimeout(timer);
+      return () => {
+        console.log('Cleaning up redirect timer');
+        clearTimeout(timer);
+      };
     }
   }, [hasVoted, router]);
 
   const handleVote = async () => {
-    if (!selectedOption) return;
+    if (!selectedOption) {
+      console.log('No option selected');
+      return;
+    }
 
+    console.log('Starting vote submission process');
     setIsSubmitting(true);
     setError(null);
 
     try {
-      await submitVote(pollId, selectedOption);
+      console.log('Submitting vote for option:', selectedOption, 'in poll:', pollId);
+      const result = await submitVote(pollId, selectedOption);
+      console.log('Vote submitted successfully, result:', result);
       
       // Update local state to reflect vote
       const updatedOptions = localOptions.map(option => {
@@ -56,13 +68,20 @@ export default function PollVotingForm({ pollId, options, totalVotes }: PollVoti
         return option;
       });
 
+      console.log('Updating local state');
       setLocalOptions(updatedOptions);
       setLocalTotalVotes(localTotalVotes + 1);
+      
+      console.log('Setting hasVoted to true');
       setHasVoted(true);
+      console.log('hasVoted state updated');
     } catch (error) {
-      console.error('Failed to submit vote:', error);
-      setError('Failed to submit vote. Please try again.');
+      console.error('Failed to submit vote - detailed error:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error message:', error instanceof Error ? error.message : String(error));
+      setError(`Failed to submit vote: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
+      console.log('Vote submission process completed, setting isSubmitting to false');
       setIsSubmitting(false);
     }
   };
@@ -115,27 +134,23 @@ export default function PollVotingForm({ pollId, options, totalVotes }: PollVoti
         </div>
       ))}
 
-      {!hasVoted ? (
-        <Button 
-          onClick={handleVote} 
-          disabled={!selectedOption || isSubmitting}
-          className="w-full"
-        >
-          {isSubmitting ? 'Submitting...' : 'Submit Vote'}
-        </Button>
-      ) : (
-        <Alert className="border-green-200 bg-green-50">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">
-            <div className="font-semibold mb-1">Vote submitted successfully!</div>
-            <div className="text-sm">
-              Thank you for participating. Total votes: <span className="font-medium">{localTotalVotes}</span>
-            </div>
-            <div className="text-xs text-green-600 mt-2">
-              Redirecting to polls dashboard in 2 seconds...
-            </div>
-          </AlertDescription>
-        </Alert>
+      <Button 
+        onClick={handleVote} 
+        disabled={!selectedOption || isSubmitting || hasVoted}
+        className="w-full"
+      >
+        {isSubmitting ? 'Submitting...' : hasVoted ? 'Vote Submitted' : 'Submit Vote'}
+      </Button>
+      
+      {hasVoted && (
+        <div className="w-full text-center mt-3">
+          <div className="text-green-500 font-medium text-lg">
+            Voting successful
+          </div>
+          <div className="text-green-500 font-medium text-sm mt-2">
+            Total votes: {localTotalVotes}
+          </div>
+        </div>
       )}
     </div>
   );
