@@ -2,43 +2,31 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createPoll } from '@/lib/actions';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
+// Server action to process form data and create poll
 async function handleCreatePoll(formData: FormData) {
   'use server';
   
-  try {
-    // Get form data
-    const title = formData.get('title') as string;
-    const description = formData.get('description') as string;
-    
-    // Get all option inputs
-    const options = [];
-    let optionIndex = 0;
-    while (formData.get(`option-${optionIndex}`)) {
-      const optionText = formData.get(`option-${optionIndex}`) as string;
-      if (optionText.trim()) {
-        options.push({ text: optionText.trim() });
-      }
-      optionIndex++;
+  // Get all option inputs and filter out empty ones
+  const options = [];
+  let optionIndex = 0;
+  while (formData.get(`option-${optionIndex}`)) {
+    const optionText = formData.get(`option-${optionIndex}`) as string;
+    if (optionText.trim()) {
+      options.push({ text: optionText.trim() });
     }
-    
-    // Create new FormData with the processed options
-    const processedFormData = new FormData();
-    processedFormData.append('title', title);
-    processedFormData.append('description', description);
-    processedFormData.append('options', JSON.stringify(options));
-    
-    await createPoll(processedFormData);
-    
-    // Redirect to polls page on success
-    redirect('/polls');
-  } catch (error) {
-    console.error('Failed to create poll:', error);
-    // In a real app, you'd want to handle this error properly
-    throw error;
+    optionIndex++;
   }
+  
+  // Create new FormData with the processed options for the createPoll action
+  const processedFormData = new FormData();
+  processedFormData.append('title', formData.get('title') as string);
+  processedFormData.append('description', formData.get('description') as string);
+  processedFormData.append('options', JSON.stringify(options));
+  
+  // Call the main createPoll action which handles validation, database operations, and redirect
+  await createPoll(processedFormData);
 }
 
 export default function CreatePollPage() {
