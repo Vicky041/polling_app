@@ -13,11 +13,71 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MoreHorizontal, Edit, Trash2 } from 'lucide-react';
 import { deletePoll } from '@/lib/actions';
 
+/**
+ * Props interface for the PollActions component
+ * 
+ * Defines the required data for rendering poll management actions
+ * with proper authorization and context.
+ * 
+ * @interface PollActionsProps
+ */
 interface PollActionsProps {
+  /** Unique identifier of the poll for action operations */
   pollId: string;
+  /** User ID of the poll creator for ownership verification */
   createdBy: string;
 }
 
+/**
+ * Poll management actions dropdown component
+ * 
+ * Provides a dropdown menu with edit and delete actions for poll owners.
+ * Includes ownership verification, confirmation dialogs, and proper error handling
+ * for secure poll management operations.
+ * 
+ * @component PollActions
+ * @param {PollActionsProps} props - Component props
+ * @param {string} props.pollId - Unique identifier of the poll
+ * @param {string} props.createdBy - User ID of the poll creator
+ * @returns {JSX.Element} Dropdown menu with poll actions or null if unauthorized
+ * 
+ * @features
+ * - Ownership-based action visibility
+ * - Edit poll navigation
+ * - Delete poll with confirmation
+ * - Loading states during operations
+ * - Error handling with user feedback
+ * - Responsive dropdown menu
+ * - Accessible keyboard navigation
+ * 
+ * @security
+ * - Verifies poll ownership before showing actions
+ * - Confirmation dialog for destructive operations
+ * - Server-side validation through actions
+ * - Prevents unauthorized modifications
+ * 
+ * @example
+ * ```tsx
+ * <PollActions
+ *   pollId="poll_123"
+ *   createdBy="user_456"
+ * />
+ * // Shows edit/delete options only if current user owns the poll
+ * ```
+ * 
+ * @accessibility
+ * - Keyboard accessible dropdown menu
+ * - Screen reader friendly action labels
+ * - Focus management for menu interactions
+ * - Semantic button elements
+ * 
+ * @workflow
+ * 1. Check if current user owns the poll
+ * 2. Render dropdown menu with available actions
+ * 3. Handle edit navigation or delete confirmation
+ * 4. Execute actions with proper error handling
+ * 5. Update UI state and provide user feedback
+ */
 export default function PollActions({ pollId, createdBy }: PollActionsProps) {
   const router = useRouter();
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);

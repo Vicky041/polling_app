@@ -4,6 +4,56 @@ import Link from 'next/link';
 import { useAuth } from '@/app/auth/context/auth-context';
 import { Avatar } from '@/components/ui/avatar';
 
+/**
+ * Main application navigation bar component
+ * 
+ * Provides the primary navigation interface for the application with user authentication
+ * awareness, responsive design, and contextual menu options based on user state.
+ * 
+ * @component AppNavbar
+ * @returns {JSX.Element} Responsive navigation header with authentication-aware content
+ * 
+ * @features
+ * - Authentication-aware navigation (different content for logged in/out users)
+ * - Responsive design with mobile-friendly layout
+ * - User avatar with dropdown menu for authenticated users
+ * - Quick access to create poll functionality
+ * - Loading states during authentication checks
+ * - Brand logo with navigation link
+ * - Contextual navigation links based on user status
+ * 
+ * @authentication
+ * - Integrates with AuthContext for user state management
+ * - Shows different navigation options for authenticated vs anonymous users
+ * - Displays user avatar and profile access when logged in
+ * - Provides sign-in/sign-up links for unauthenticated users
+ * 
+ * @responsive
+ * - Mobile-first design with hidden elements on small screens
+ * - Responsive navigation menu that adapts to screen size
+ * - Touch-friendly interactive elements
+ * - Proper spacing and layout across devices
+ * 
+ * @accessibility
+ * - Semantic header element with proper navigation structure
+ * - Keyboard accessible navigation links
+ * - Screen reader friendly avatar and menu elements
+ * - Proper focus management for interactive elements
+ * 
+ * @example
+ * ```tsx
+ * // Used in layout components
+ * <AppNavbar />
+ * // Automatically adapts based on authentication state
+ * ```
+ * 
+ * @styling
+ * - Clean white background with subtle border
+ * - Consistent spacing and typography
+ * - Hover states for interactive elements
+ * - Brand colors for primary actions
+ * - Dropdown menu with proper z-index layering
+ */
 export function AppNavbar() {
   const { user, loading } = useAuth();
 
