@@ -20,6 +20,7 @@ The project uses the following technologies. Do not introduce new libraries or f
 - Main Framework: Next.js (App Router)
 - Database & Auth: Supabase
 - Styling: Tailwind CSS with shadcn/ui components
+- Animations: Framer Motion for smooth, performant animations
 - State Management: Primarily Server Components for server state. Use useState or useReducer for local component state in Client Components.
 - API Communication: Use Next.js Server Actions for mutations (creating polls, voting). Fetch data in Server Components using the Supabase client.
 - Utility Libraries: A library like qrcode.react for generating QR codes.
@@ -38,16 +39,54 @@ The project uses the following technologies. Do not introduce new libraries or f
 - Error Handling: Use try/catch blocks within Server Actions and Route Handlers. Use Next.js error.tsx files for handling errors within route segments.
 - API Keys & Secrets: Never hardcode secrets. Use environment variables (.env.local) for Supabase URL and keys, accessed via process.env.NEXT_PUBLIC_SUPABASE_URL and process.env.SUPABASE_SECRET_KEY.
 
+## UI/UX & Animation Guidelines
+
+### Rule 1: Performance-First Animation Strategy
+- **Always use Intersection Observer**: Implement animations only when elements enter the viewport to optimize performance and reduce unnecessary computations.
+- **Memoize Animation Components**: Use `React.memo()` for motion components to prevent unnecessary re-renders.
+- **Respect User Preferences**: Always check for `prefers-reduced-motion` and provide fallbacks for users who prefer minimal animations.
+- **Optimize Animation Variants**: Keep animation variants simple and avoid complex easing functions that can impact performance.
+
+### Rule 2: Consistent Animation Patterns
+- **Staggered Animations**: Use consistent stagger timing (0.1-0.2s) for child elements to create smooth, professional transitions.
+- **Standard Durations**: Stick to 0.3-0.6s for most animations. Shorter for micro-interactions, longer for complex transitions.
+- **Unified Motion Language**: Use consistent animation patterns across all components (fade-in-up, scale, opacity transitions).
+- **Trigger Once Pattern**: For landing pages and marketing content, use `triggerOnce: true` to prevent repetitive animations on scroll.
+
+### Rule 3: Modern UI Design Principles
+- **Gradient Backgrounds**: Use subtle gradients for visual depth and modern aesthetics (blue-to-purple, gray gradients).
+- **Card-Based Layouts**: Implement hover effects with subtle shadows and scale transforms for interactive elements.
+- **Typography Hierarchy**: Use clear font size progression (text-4xl to text-5xl for headers, text-xl for subheadings).
+- **Spacing Consistency**: Follow 8px grid system with consistent padding (p-6, p-8) and margins (mb-6, mb-8, mb-16).
+
+### Rule 4: Component Architecture for Animations
+- **Custom Hooks**: Create reusable hooks like `useIntersectionObserver` for animation triggers.
+- **Variant Objects**: Define animation variants outside component render to prevent recreation on each render.
+- **Conditional Animation**: Use intersection state to conditionally apply animations: `animate={isIntersecting ? "visible" : "hidden"}`.
+- **Performance Utilities**: Create memoized motion components and optimization utilities for consistent performance.
+
+### Rule 5: Accessibility & User Experience
+- **Loading States**: Implement smooth loading animations and skeleton screens for better perceived performance.
+- **Error Boundaries**: Gracefully handle animation failures without breaking the user experience.
+- **Progressive Enhancement**: Ensure core functionality works without animations, treating them as enhancements.
+- **Mobile Optimization**: Test animations on mobile devices and reduce complexity for lower-powered devices.
+
 ## Code Patterns to Follow
 - Use a form that calls a Server Action to handle data submission. This keeps client-side JavaScript minimal.
 - Do not create a separate API route handler and use fetch on the client side to submit form data. Use Server Actions instead.
 - Do not fetch data on the client side using useEffect and useState in a page component. Fetch data directly in a Server Component.
+- **Animation Pattern**: Always wrap animated sections with intersection observers and use consistent variant patterns for professional animations.
 
 ## Verification Checklist
-Before finalizing your response, you MUST verify the following:
-
-- Does the code use the Next.js App Router and Server Components for data fetching?
-- Are Server Actions used for data mutations (forms)?
-- Is the Supabase client used for all database interactions?
-- Are shadcn/ui components used for the UI where appropriate?
-- Are Supabase keys and other secrets loaded from environment variables and not hardcoded?
+Before considering any feature complete, verify:
+- [ ] TypeScript compiles without errors (`npx tsc --noEmit`)
+- [ ] All forms use Server Actions, not client-side fetch
+- [ ] Data fetching happens in Server Components, not useEffect
+- [ ] Environment variables are properly configured
+- [ ] Database schema matches the expected structure
+- [ ] Error handling is implemented for all user actions
+- [ ] UI follows the established design patterns
+- [ ] **Animations**: All animations use intersection observers and respect user motion preferences
+- [ ] **Performance**: Motion components are memoized and animation variants are optimized
+- [ ] **Accessibility**: Animations have proper fallbacks and don't interfere with core functionality
+- [ ] **Mobile**: Animations work smoothly on mobile devices and lower-powered hardware
