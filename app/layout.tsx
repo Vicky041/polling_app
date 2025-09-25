@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ALX Polly - Create and Share Polls",
+  title: "AV-Polly - Create and Share Polls",
   description: "A modern polling application for creating and sharing polls with others",
 };
 

@@ -1,10 +1,10 @@
-# ALX Polly - Polling App with QR Code Sharing
+# AV-Polly - Polling App with QR Code Sharing
 
 A modern web application that allows users to create polls and share them via unique links and QR codes for easy voting access. Built with Next.js, Supabase, and TypeScript.
 
 ## 🚀 Project Overview
 
-ALX Polly is a full-stack polling application that enables users to:
+AV-Polly is a full-stack polling application that enables users to:
 - Register and authenticate securely
 - Create custom polls with multiple options
 - Share polls via unique links and QR codes
@@ -35,7 +35,7 @@ Before setting up the project, ensure you have:
 
 ```bash
 git clone <repository-url>
-cd alx-polly
+cd av-polly
 ```
 
 ### 2. Install Dependencies
@@ -156,7 +156,7 @@ npm run test:coverage
 ## 📁 Project Structure
 
 ```
-alx-polly/
+av-polly/
 ├── app/                    # Next.js App Router pages
 │   ├── auth/              # Authentication pages
 │   ├── polls/             # Poll-related pages

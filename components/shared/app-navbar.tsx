@@ -62,7 +62,7 @@ export function AppNavbar() {
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <Link href="/" className="text-xl font-bold text-blue-600 hover:text-blue-800">
-            ALX Polly
+            AV-Polly
           </Link>
           <nav className="hidden md:flex space-x-4">
             {user && (
