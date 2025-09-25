@@ -64,6 +64,7 @@ export async function middleware(req: NextRequest) {
 }
 
 // Configure the middleware to run on specific paths
+// Exclude root path (/) to allow hero section to be displayed to all visitors
 export const config = {
   matcher: [
     '/polls/:path*',

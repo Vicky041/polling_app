@@ -84,12 +84,16 @@ export function FeaturesSection() {
               Join thousands of users who trust our platform for their polling needs.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg">
-                Start Free Trial
-              </button>
-              <button className="border-2 border-gray-300 hover:border-blue-500 text-gray-700 hover:text-blue-600 px-8 py-3 rounded-xl font-semibold transition-all duration-300">
-                View Pricing
-              </button>
+              <Link href="/auth/sign-up">
+                <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg w-full sm:w-auto">
+                  Start Free Trial
+                </button>
+              </Link>
+              <Link href="/pricing">
+                <button className="border-2 border-gray-300 hover:border-blue-500 text-gray-700 hover:text-blue-600 px-8 py-3 rounded-xl font-semibold transition-all duration-300 w-full sm:w-auto">
+                  View Pricing
+                </button>
+              </Link>
             </div>
           </div>
         </div>

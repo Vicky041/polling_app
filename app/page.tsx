@@ -1,5 +1,13 @@
-import { redirect } from 'next/navigation';
+import { HeroSection, FeaturesSection, TestimonialsSection, CTASection } from './landing/components';
+import './landing/landing.css';
 
 export default function Home() {
-  redirect('/polls');
+  return (
+    <div className="min-h-screen">
+      <HeroSection />
+      <FeaturesSection />
+      <TestimonialsSection />
+      <CTASection />
+    </div>
+  );
 }
