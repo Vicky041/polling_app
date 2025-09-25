@@ -7,10 +7,15 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   
   // Create Supabase client for middleware
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('Missing Supabase environment variables in middleware');
+    return res;
+  }
+  
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   // Get session from cookies
   const refreshToken = req.cookies.get('sb-refresh-token')?.value;
